@@ -1,7 +1,21 @@
+using GLMS.Data;
+using GLMS.Services;
+using Microsoft.EntityFrameworkCore;
+using GLMS.Services;
+using GLMS.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<ServiceRequestService>();
+builder.Services.AddScoped<ContractService>();
+builder.Services.AddHttpClient<CurrencyService>();
 
 var app = builder.Build();
 
@@ -22,6 +36,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Contracts}/{action=Index}/{id?}");
 
 app.Run();

@@ -1,0 +1,91 @@
+﻿@model GLMS.Models.Contract
+@using GLMS.Models.Enums
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Contract</h1>
+
+<h4>Edit</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="ClientId" class="control-label"></label>
+                <select asp-for="ClientId" class="form-control" asp-items="ViewBag.ClientId"></select>
+                <span asp-validation-for="ClientId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartDate" class="control-label"></label>
+                <input asp-for="StartDate" class="form-control" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EndDate" class="control-label"></label>
+                <input asp-for="EndDate" class="form-control" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Status" class="control-label"></label>
+
+                <select asp-for="Status"
+                        class="form-control"
+                        asp-items="Html.GetEnumSelectList<GLMS.Models.Enums.ContractStatus>()">
+                </select>
+
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ServiceLevel" class="control-label"></label>
+
+                <select asp-for="ServiceLevel"
+                        class="form-control"
+                        asp-items="Html.GetEnumSelectList<GLMS.Models.Enums.ServiceLevel>()">
+
+                    <option value="">-- Select Service Level --</option>
+
+                </select>
+
+                <span asp-validation-for="ServiceLevel" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Replace Agreement PDF</label>
+                <input type="file" name="agreementFile" class="form-control" accept=".pdf" />
+            </div>
+            @if (!string.IsNullOrEmpty(Model.AgreementFilePath))
+            {
+                <div class="mb-2">
+                    Current File:
+                    <a href="~/uploads/contracts/@Model.AgreementFilePath"
+                       target="_blank" class="custom-btn custom-btn-info">
+                        View Current PDF
+                    </a>
+                </div>
+            }
+            <div class="form-group" style="margin-top: 15px;">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index" class="custom-btn custom-btn-info" style="margin-top: 15px;">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

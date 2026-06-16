@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using GLMS_V3.Models;
+using GLMS.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GLMS_V3.Controllers
+namespace GLMS.Controllers
 {
     public class HomeController : Controller
     {

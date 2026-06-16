@@ -1,0 +1,145 @@
+﻿@model IEnumerable<GLMS.Models.Contract>
+@using GLMS.Models.Enums
+
+@{
+    ViewData["Title"] = "Contracts";
+}
+
+<h1>Contract</h1>
+
+<p>
+    <a asp-action="Create"
+       class="custom-btn custom-btn-success">
+        Create New
+    </a>
+</p>
+
+<form method="get" class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <label class="form-label">Status</label>
+
+        <select name="status"
+                class="form-control"
+                asp-items="Html.GetEnumSelectList<ContractStatus>()">
+
+            <option value="">All Statuses</option>
+
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Start Date</label>
+
+        <input type="date"
+               name="startDate"
+               value="@ViewBag.StartDate?.ToString("yyyy-MM-dd")"
+               class="form-control" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">End Date</label>
+
+        <input type="date"
+               name="endDate"
+               value="@ViewBag.EndDate?.ToString("yyyy-MM-dd")"
+               class="form-control" />
+    </div>
+
+    <div class="col-md-3 d-flex align-items-end">
+        <button type="submit"
+                class="custom-btn custom-btn-primary">
+            Filter
+        </button>
+    </div>
+
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Client)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StartDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EndDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ServiceLevel)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AgreementFilePath)
+            </th>
+            <th>
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Client.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StartDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EndDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                 @item.ServiceLevel.ToString()
+            </td>
+            <td>
+                @if (!string.IsNullOrEmpty(item.AgreementFilePath))
+                {
+                    <a href="~/uploads/contracts/@item.AgreementFilePath"
+                        target="_blank"
+                        class="custom-btn custom-btn-info">
+                        View PDF
+                    </a>
+                }
+            </td>
+
+            <td>
+                @if (!string.IsNullOrEmpty(item.AgreementFilePath))
+                {
+                    <a href="~/uploads/contracts/@item.AgreementFilePath"
+                        download
+                        class="custom-btn custom-btn-secondary">
+                        Download PDF
+                    </a>
+                }
+            </td>
+            <td>
+                <a asp-action="Edit"
+                    asp-route-id="@item.Id"
+                    class="custom-btn custom-btn-primary">
+                    Edit
+                </a>
+                    
+                <a asp-action="Delete"
+                    asp-route-id="@item.Id"
+                    class="custom-btn custom-btn-danger">
+                    Delete
+                </a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

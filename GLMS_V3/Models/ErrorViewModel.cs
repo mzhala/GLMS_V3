@@ -1,4 +1,4 @@
-namespace GLMS_V3.Models
+namespace GLMS.Models
 {
     public class ErrorViewModel
     {
