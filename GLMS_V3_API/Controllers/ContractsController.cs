@@ -1,32 +1,32 @@
 ﻿using GLMS.Data;
 using GLMS.Models;
+using GLMS.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using GLMS_V3.API.Interfaces;
 
 [ApiController]
 [Route("api/[controller]")]
 public class ContractsController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-
-    public ContractsController(ApplicationDbContext context)
+    private readonly IContractService _service;
+    public ContractsController(IContractService service)
     {
-        _context = context;
+        _service = service;
     }
 
     [HttpGet]
-    public IActionResult GetContracts()
+    public async Task<IActionResult> GetContracts()
     {
-        var contracts = _context.Contracts.ToList();
+        var contracts = await _service.GetAllAsync();
+
         return Ok(contracts);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetContract(int id)
     {
-        var contract = await _context.Contracts
-            .Include(c => c.Client)
-            .FirstOrDefaultAsync(c => c.Id == id);
+        var contract = await _service.GetByIdAsync(id);
 
         if (contract == null)
         {
@@ -36,6 +36,23 @@ public class ContractsController : ControllerBase
         return Ok(contract);
     }
 
+    [HttpPatch("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(
+    int id,
+    [FromBody] ContractStatus status)
+    {
+        var contract = await _service.GetByIdAsync(id);
+
+        if (contract == null)
+        {
+            return NotFound();
+        }
+
+        await _service.UpdateStatusAsync(id, status);
+
+        return NoContent();
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateContract([FromBody] Contract contract)
     {
@@ -43,10 +60,8 @@ public class ContractsController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
-        _context.Contracts.Add(contract);
 
-        await _context.SaveChangesAsync();
+        await _service.CreateAsync(contract);
 
         return CreatedAtAction(
             nameof(GetContract),
@@ -63,21 +78,7 @@ public class ContractsController : ControllerBase
             return BadRequest();
         }
 
-        _context.Entry(contract).State = EntityState.Modified;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!_context.Contracts.Any(c => c.Id == id))
-            {
-                return NotFound();
-            }
-
-            throw;
-        }
+        await _service.UpdateAsync(contract);
 
         return NoContent();
 
@@ -86,20 +87,16 @@ public class ContractsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteContract(int id)
     {
-        var contract = await _context.Contracts.FindAsync(id);
+        var contract = await _service.GetByIdAsync(id);
 
-    if (contract == null)
+        if (contract == null)
         {
             return NotFound();
         }
 
-        _context.Contracts.Remove(contract);
-
-        await _context.SaveChangesAsync();
+        await _service.DeleteAsync(id);
 
         return NoContent();
 
-
     }
-
 }
