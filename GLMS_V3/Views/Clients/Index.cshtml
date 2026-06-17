@@ -4,6 +4,13 @@
     ViewData["Title"] = "Index";
 }
 
+@if (ViewBag.ApiMessage != null)
+{
+    <div class="alert alert-warning">
+        @ViewBag.ApiMessage
+    </div>
+}
+
 <h1>Clients</h1>
 
 <p>

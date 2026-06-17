@@ -12,8 +12,8 @@ namespace GLMS.Models
         public string Name { get; set; }
 
         [Required]
-        [Phone]
-        [Display(Name = "Contact Details")] 
+        [RegularExpression(@"^0\d{9}$", ErrorMessage = "Contact number must start with 0 and contain exactly 10 digits.")]
+        [Display(Name = "Contact Details")]
         public string ContactDetails { get; set; }
 
         [Required]

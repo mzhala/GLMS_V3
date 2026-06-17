@@ -5,6 +5,12 @@
         <div asp-validation-summary="All"></div>
     </div>
 }
+@if (ViewBag.ApiMessage != null)
+{
+    <div class="alert alert-warning">
+        @ViewBag.ApiMessage
+    </div>
+}
 @{
     ViewData["Title"] = "Create";
 }
@@ -16,7 +22,6 @@
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
@@ -24,7 +29,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="ContactDetails" class="control-label"></label>
-                <input asp-for="ContactDetails" class="form-control" placeholder="e.g. +27 82 123 4567" />
+                <input asp-for="ContactDetails" class="form-control" placeholder="e.g. 0311234567" />
                 <span asp-validation-for="ContactDetails" class="text-danger"></span>
             </div>
             <div class="form-group">

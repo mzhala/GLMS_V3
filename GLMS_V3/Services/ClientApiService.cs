@@ -45,5 +45,84 @@ namespace GLMS.Services
                 return null;
             }
         }
+
+        public async Task<bool> CreateClientAsync(Client clientModel)
+        {
+            try
+            {
+                var client =
+                    _httpClientFactory.CreateClient("GLMSApi");
+
+                var response =
+                    await client.PostAsJsonAsync(
+                        "api/clients",
+                        clientModel);
+
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateClientAsync(
+            int id,
+            Client clientModel)
+        {
+            try
+            {
+                var client =
+                    _httpClientFactory.CreateClient("GLMSApi");
+
+                var response =
+                    await client.PutAsJsonAsync(
+                        $"api/clients/{id}",
+                        clientModel);
+
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteClientAsync(int id)
+        {
+            try
+            {
+                var client =
+                    _httpClientFactory.CreateClient("GLMSApi");
+
+                var response =
+                    await client.DeleteAsync(
+                        $"api/clients/{id}");
+
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> IsApiAvailableAsync()
+        {
+            try
+            {
+                var client =
+                    _httpClientFactory.CreateClient("GLMSApi");
+
+                var response =
+                    await client.GetAsync("api/clients");
+
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

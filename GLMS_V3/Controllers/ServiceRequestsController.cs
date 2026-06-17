@@ -1,33 +1,27 @@
-﻿using GLMS.Data;
-using GLMS.Models;
+﻿using GLMS.Models;
 using GLMS.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace GLMS.Controllers
 {
     public class ServiceRequestsController : Controller
     {
-        private readonly ServiceRequestService _service;
-        private readonly ApplicationDbContext _context;
         private readonly ServiceRequestApiService _apiService;
+        private readonly ContractApiService _contractApiService;
 
         public ServiceRequestsController(
-            ServiceRequestService service,
-            ApplicationDbContext context,
-            ServiceRequestApiService apiService)
+            ServiceRequestApiService apiService,
+            ContractApiService contractApiService)
         {
-            _service = service;
-            _context = context;
             _apiService = apiService;
+            _contractApiService = contractApiService;
         }
 
         // GET: ServiceRequests
         public async Task<IActionResult> Index()
         {
-            var serviceRequests =
-                await _apiService.GetServiceRequestsAsync();
+            var serviceRequests = await _apiService.GetServiceRequestsAsync()?? new List<ServiceRequest>();
 
             return View(serviceRequests);
         }
@@ -40,7 +34,7 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var serviceRequest = await _service.GetByIdAsync(id.Value);
+            var serviceRequest = await _apiService.GetServiceRequestAsync(id.Value);
 
             if (serviceRequest == null)
             {
@@ -51,9 +45,9 @@ namespace GLMS.Controllers
         }
 
         // GET: ServiceRequests/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            LoadContractsDropdown();
+            await LoadContractsDropdown();
             return View();
         }
 
@@ -66,13 +60,17 @@ namespace GLMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _service.CreateAsync(serviceRequest);
+                var success =
+                    await _apiService.CreateServiceRequestAsync(
+                        serviceRequest);
 
-                if (!result.Success)
+                if (!success)
                 {
-                    ModelState.AddModelError("", result.Message);
+                    ModelState.AddModelError(
+                        "",
+                        "Unable to contact API service.");
 
-                    LoadContractsDropdown();
+                    await LoadContractsDropdown();
 
                     return View(serviceRequest);
                 }
@@ -80,7 +78,10 @@ namespace GLMS.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadContractsDropdown();
+            await LoadContractsDropdown();
+            return View(serviceRequest);
+
+            await LoadContractsDropdown();
             return View(serviceRequest);
         }
 
@@ -92,14 +93,14 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var serviceRequest = await _service.GetByIdAsync(id.Value);
+            var serviceRequest = await _apiService.GetServiceRequestAsync(id.Value);
 
             if (serviceRequest == null)
             {
                 return NotFound();
             }
 
-            LoadContractsDropdown();
+            await LoadContractsDropdown();
 
             return View(serviceRequest);
         }
@@ -119,33 +120,23 @@ namespace GLMS.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                var success = await _apiService.UpdateServiceRequestAsync(id, serviceRequest);
+
+                if (!success)
                 {
-                    var result = await _service.UpdateAsync(serviceRequest);
+                    ModelState.AddModelError(
+                        "",
+                        "Unable to contact API service.");
 
-                    if (!result.Success)
-                    {
-                        ModelState.AddModelError("", result.Message);
+                    await LoadContractsDropdown();
 
-                        LoadContractsDropdown();
-
-                        return View(serviceRequest);
-                    }
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_service.Exists(serviceRequest.Id))
-                    {
-                        return NotFound();
-                    }
-
-                    throw;
+                    return View(serviceRequest);
                 }
 
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadContractsDropdown();
+            await LoadContractsDropdown();
 
             return View(serviceRequest);
         }
@@ -158,7 +149,7 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var serviceRequest = await _service.GetByIdAsync(id.Value);
+            var serviceRequest = await _apiService.GetServiceRequestAsync(id.Value);
 
             if (serviceRequest == null)
             {
@@ -173,25 +164,30 @@ namespace GLMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _service.DeleteAsync(id);
+            await _apiService.DeleteServiceRequestAsync(id);
 
             return RedirectToAction(nameof(Index));
         }
 
-        private void LoadContractsDropdown()
+        private async Task LoadContractsDropdown()
         {
-            var contracts = _context.Contracts
-                .Include(c => c.Client)
-                .Select(c => new
-                {
-                    c.Id,
-                    DisplayText =
-                        $"Contract {c.Id} | Service Level: {c.ServiceLevel} | Status: {c.Status} | Client: {c.Client.Name}"
-                })
-                .ToList();
+            var contracts = await _contractApiService.GetContractsAsync(
+                    null,
+                    null,
+                    null);
+
+            var contractList = contracts.Select(c => new
+            {
+                c.Id,
+                DisplayText =
+                    $"Contract {c.Id} | Service Level: {c.ServiceLevel} | Status: {c.Status} | Client: {c.Client?.Name}"
+            });
 
             ViewData["ContractId"] =
-                new SelectList(contracts, "Id", "DisplayText");
+                new SelectList(
+                    contractList,
+                    "Id",
+                    "DisplayText");
         }
     }
 }

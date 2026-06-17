@@ -1,27 +1,17 @@
-﻿using GLMS.Data;
-using GLMS.Models;
+﻿using GLMS.Models;
 using GLMS.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 namespace GLMS.Controllers
 {
     public class ClientsController : Controller
     {
-        private readonly ApplicationDbContext _context;
-
         private readonly ClientApiService _apiService;
 
         public ClientsController(
-            ApplicationDbContext context,
             ClientApiService apiService)
         {
-            _context = context;
             _apiService = apiService;
         }
 
@@ -30,6 +20,12 @@ namespace GLMS.Controllers
         {
             var clients =
                 await _apiService.GetClientsAsync();
+
+            if (!clients.Any())
+            {
+                ViewBag.ApiMessage =
+                    "No clients available or API service is unavailable.";
+            }
 
             return View(clients);
         }
@@ -42,8 +38,7 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var client = await _context.Clients
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var client = await _apiService.GetClientAsync(id.Value);
             if (client == null)
             {
                 return NotFound();
@@ -53,8 +48,17 @@ namespace GLMS.Controllers
         }
 
         // GET: Clients/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var apiAvailable =
+                await _apiService.IsApiAvailableAsync();
+
+            if (!apiAvailable)
+            {
+                ViewBag.ApiMessage =
+                    "Unable to connect to the API service. Saving clients is currently unavailable.";
+            }
+
             return View();
         }
 
@@ -67,8 +71,18 @@ namespace GLMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(client);
-                await _context.SaveChangesAsync();
+                var success =
+                    await _apiService.CreateClientAsync(client);
+
+                if (!success)
+                {
+                    ModelState.AddModelError(
+                        "",
+                        "Unable to contact API service.");
+
+                    return View(client);
+                }
+
                 return RedirectToAction(nameof(Index));
             }
             return View(client);
@@ -82,7 +96,7 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var client = await _context.Clients.FindAsync(id);
+            var client = await _apiService.GetClientAsync(id.Value);
             if (client == null)
             {
                 return NotFound();
@@ -104,23 +118,24 @@ namespace GLMS.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                if (ModelState.IsValid)
                 {
-                    _context.Update(client);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ClientExists(client.Id))
+                    var success =
+                        await _apiService.UpdateClientAsync(
+                            id,
+                            client);
+
+                    if (!success)
                     {
-                        return NotFound();
+                        ModelState.AddModelError(
+                            "",
+                            "Unable to contact API service.");
+
+                        return View(client);
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
             }
             return View(client);
         }
@@ -133,8 +148,7 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var client = await _context.Clients
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var client = await _apiService.GetClientAsync(id.Value);
             if (client == null)
             {
                 return NotFound();
@@ -148,19 +162,13 @@ namespace GLMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var client = await _context.Clients.FindAsync(id);
-            if (client != null)
-            {
-                _context.Clients.Remove(client);
-            }
-
-            await _context.SaveChangesAsync();
+            await _apiService.DeleteClientAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool ClientExists(int id)
         {
-            return _context.Clients.Any(e => e.Id == id);
+            return true;
         }
     }
 }
