@@ -15,11 +15,31 @@ namespace GLMS_V3.API.Repositories
             _context = context;
         }
 
-        public async Task<List<Contract>> GetAllAsync()
+        public async Task<List<Contract>> GetAllAsync(
+            ContractStatus? status,
+            DateTime? startDate,
+            DateTime? endDate)
         {
-            return await _context.Contracts
+            var query = _context.Contracts
                 .Include(c => c.Client)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (status.HasValue)
+            {
+                query = query.Where(c => c.Status == status);
+            }
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(c => c.StartDate >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(c => c.EndDate <= endDate.Value);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<Contract?> GetByIdAsync(int id)

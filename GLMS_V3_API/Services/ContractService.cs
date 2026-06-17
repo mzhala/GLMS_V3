@@ -15,9 +15,15 @@ namespace GLMS_V3.API.Services
             _repository = repository;
         }
 
-        public async Task<List<Contract>> GetAllAsync()
+        public async Task<List<Contract>> GetAllAsync(
+            ContractStatus? status,
+            DateTime? startDate,
+            DateTime? endDate)
         {
-            return await _repository.GetAllAsync();
+            return await _repository.GetAllAsync(
+                status,
+                startDate,
+                endDate);
         }
 
         public async Task<Contract?> GetByIdAsync(int id)

@@ -15,9 +15,15 @@ public class ContractsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetContracts()
+    public async Task<IActionResult> GetContracts(
+        ContractStatus? status,
+        DateTime? startDate,
+        DateTime? endDate)
     {
-        var contracts = await _service.GetAllAsync();
+        var contracts = await _service.GetAllAsync(
+            status,
+            startDate,
+            endDate);
 
         return Ok(contracts);
     }

@@ -5,7 +5,10 @@ namespace GLMS_V3.API.Interfaces
 {
     public interface IContractRepository
     {
-        Task<List<Contract>> GetAllAsync();
+        Task<List<Contract>> GetAllAsync(
+            ContractStatus? status,
+            DateTime? startDate,
+            DateTime? endDate);
 
         Task<Contract?> GetByIdAsync(int id);
 
