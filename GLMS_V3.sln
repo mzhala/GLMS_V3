@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLMS_V3", "GLMS_V3\GLMS_V3.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLMS_V3_Tests", "GLMS_V3_Tests\GLMS_V3_Tests.csproj", "{5194DB16-30A3-4C0A-AE7B-1E735A194322}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLMS_V3_API", "GLMS_V3_API\GLMS_V3_API.csproj", "{ACB6F331-880F-4B1E-A5E8-C1C05B1A42B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{5194DB16-30A3-4C0A-AE7B-1E735A194322}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5194DB16-30A3-4C0A-AE7B-1E735A194322}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5194DB16-30A3-4C0A-AE7B-1E735A194322}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACB6F331-880F-4B1E-A5E8-C1C05B1A42B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACB6F331-880F-4B1E-A5E8-C1C05B1A42B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACB6F331-880F-4B1E-A5E8-C1C05B1A42B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACB6F331-880F-4B1E-A5E8-C1C05B1A42B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
