@@ -146,12 +146,14 @@ namespace GLMS_V3.Tests.Controller
             var result = await controller.Create(contract, file);
 
             // Assert
-            var redirectResult =
-                Assert.IsType<RedirectToActionResult>(result);
+            var viewResult = Assert.IsType<ViewResult>(result);
 
-            Assert.Equal("Index", redirectResult.ActionName);
+            Assert.False(controller.ModelState.IsValid);
 
-            Assert.True(controller.ModelState.IsValid);
+            Assert.Contains(
+                controller.ModelState.Values
+                    .SelectMany(v => v.Errors),
+                e => e.ErrorMessage == "Failed to create contract.");
         }
     }
 }
