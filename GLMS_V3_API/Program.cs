@@ -1,9 +1,10 @@
 using GLMS.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
 using GLMS_V3.API.Interfaces;
 using GLMS_V3.API.Repositories;
 using GLMS_V3.API.Services;
+using GLMS_V3_API.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,22 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IContractService,
     ContractService>();
+
+builder.Services.AddScoped<
+    IClientRepository,
+    ClientRepository>();
+
+builder.Services.AddScoped<
+    IClientService,
+    ClientService>();
+
+builder.Services.AddScoped<
+    IServiceRequestRepository,
+    ServiceRequestRepository>();
+
+builder.Services.AddScoped<
+    IServiceRequestService,
+    ServiceRequestService>();
 
 var app = builder.Build();
 

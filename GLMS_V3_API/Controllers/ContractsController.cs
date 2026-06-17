@@ -2,7 +2,6 @@
 using GLMS.Models;
 using GLMS.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using GLMS_V3.API.Interfaces;
 
 [ApiController]

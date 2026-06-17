@@ -1,7 +1,7 @@
-﻿using GLMS.Data;
-using GLMS.Models;
+﻿using GLMS.Models;
+using GLMS_V3.API.Interfaces;
+using GLMS_V3_API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace GLMS.API.Controllers
 {
@@ -9,18 +9,18 @@ namespace GLMS.API.Controllers
     [Route("api/[controller]")]
     public class ClientsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IClientService _service;
 
-        public ClientsController(ApplicationDbContext context)
+    public ClientsController(IClientService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // GET: api/Clients
         [HttpGet]
         public async Task<IActionResult> GetClients()
         {
-            var clients = await _context.Clients.ToListAsync();
+            var clients = await _service.GetAllAsync();
 
             return Ok(clients);
         }
@@ -29,8 +29,7 @@ namespace GLMS.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetClient(int id)
         {
-            var client = await _context.Clients
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var client = await _service.GetByIdAsync(id);
 
             if (client == null)
             {
@@ -50,9 +49,7 @@ namespace GLMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            _context.Clients.Add(client);
-
-            await _context.SaveChangesAsync();
+            await _service.CreateAsync(client);
 
             return CreatedAtAction(
                 nameof(GetClient),
@@ -71,22 +68,7 @@ namespace GLMS.API.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(client).State =
-                EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Clients.Any(c => c.Id == id))
-                {
-                    return NotFound();
-                }
-
-                throw;
-            }
+            await _service.UpdateAsync(client);
 
             return NoContent();
         }
@@ -95,16 +77,14 @@ namespace GLMS.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteClient(int id)
         {
-            var client = await _context.Clients.FindAsync(id);
+            var client = await _service.GetByIdAsync(id);
 
             if (client == null)
             {
                 return NotFound();
             }
 
-            _context.Clients.Remove(client);
-
-            await _context.SaveChangesAsync();
+            await _service.DeleteAsync(id);
 
             return NoContent();
         }

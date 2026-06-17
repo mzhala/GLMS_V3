@@ -1,28 +1,24 @@
-﻿using GLMS.Data;
-using GLMS.Models;
+﻿using GLMS.Models;
+using GLMS_V3_API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-
 namespace GLMS.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class ServiceRequestsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IServiceRequestService _service;
 
-        public ServiceRequestsController(ApplicationDbContext context)
+    public ServiceRequestsController(IServiceRequestService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // GET: api/ServiceRequests
         [HttpGet]
         public async Task<IActionResult> GetServiceRequests()
         {
-            var requests = await _context.ServiceRequests
-                .Include(s => s.Contract)
-                .ToListAsync();
+            var requests = await _service.GetAllAsync();
 
             return Ok(requests);
         }
@@ -31,9 +27,7 @@ namespace GLMS.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetServiceRequest(int id)
         {
-            var request = await _context.ServiceRequests
-                .Include(s => s.Contract)
-                .FirstOrDefaultAsync(s => s.Id == id);
+            var request = await _service.GetByIdAsync(id);
 
             if (request == null)
             {
@@ -53,9 +47,7 @@ namespace GLMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            _context.ServiceRequests.Add(serviceRequest);
-
-            await _context.SaveChangesAsync();
+            await _service.CreateAsync(serviceRequest);
 
             return CreatedAtAction(
                 nameof(GetServiceRequest),
@@ -74,22 +66,7 @@ namespace GLMS.API.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(serviceRequest).State =
-                EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.ServiceRequests.Any(s => s.Id == id))
-                {
-                    return NotFound();
-                }
-
-                throw;
-            }
+            await _service.UpdateAsync(serviceRequest);
 
             return NoContent();
         }
@@ -98,17 +75,14 @@ namespace GLMS.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteServiceRequest(int id)
         {
-            var request =
-                await _context.ServiceRequests.FindAsync(id);
+            var request = await _service.GetByIdAsync(id);
 
             if (request == null)
             {
                 return NotFound();
             }
 
-            _context.ServiceRequests.Remove(request);
-
-            await _context.SaveChangesAsync();
+            await _service.DeleteAsync(id);
 
             return NoContent();
         }
