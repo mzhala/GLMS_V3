@@ -10,6 +10,7 @@ namespace GLMS_V3.Tests.Integration
         // Integration Test:
         // Verify that the Contracts API endpoint is reachable
         // and returns a successful HTTP response with data.
+        [Trait("Category", "Integration")]
         [Fact]
         public async Task GetContracts_ShouldReturn200()
         {
@@ -33,6 +34,7 @@ namespace GLMS_V3.Tests.Integration
         // Integration Test:
         // Verify that a Client can be created through the API
         // and then retrieved successfully, ensuring data integrity.
+        [Trait("Category", "Integration")]
         [Fact]
         public async Task CreateClient_ThenReadClient_ShouldMatch()
         {
@@ -80,6 +82,7 @@ namespace GLMS_V3.Tests.Integration
         // Integration Test:
         // Verify that the Clients API endpoint is reachable
         // and returns a successful HTTP response with data.
+        [Trait("Category", "Integration")]
         [Fact]
         public async Task GetClients_ShouldReturn200()
         {
@@ -100,6 +103,7 @@ namespace GLMS_V3.Tests.Integration
         // Integration Test:
         // Verify that the Service Requests API endpoint is reachable
         // and returns a successful HTTP response with data.
+        [Trait("Category", "Integration")]
         [Fact]
         public async Task GetServiceRequests_ShouldReturn200()
         {
@@ -120,6 +124,7 @@ namespace GLMS_V3.Tests.Integration
         // Integration Test:
         // Verify that a specific Contract can be retrieved
         // by its identifier from the API.
+        [Trait("Category", "Integration")]
         [Fact]
         public async Task GetContractById_ShouldReturnContract()
         {
@@ -141,6 +146,7 @@ namespace GLMS_V3.Tests.Integration
         // Integration Test:
         // Verify that a Client can be created, updated,
         // and then retrieved with the updated values.
+        [Trait("Category", "Integration")]
         [Fact]
         public async Task CreateClient_UpdateClient_ShouldPersistChanges()
         {
