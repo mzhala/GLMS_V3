@@ -11,51 +11,41 @@ namespace GLMS.Controllers
 {
     public class ContractsController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
-        private readonly ContractService _service;
+        private readonly ContractApiService _apiService;
+        private readonly ClientApiService _clientApiService;
 
         public ContractsController(
-            ApplicationDbContext context,
             IWebHostEnvironment environment,
-            ContractService service)
+            ContractApiService apiService,
+            ClientApiService clientApiService)
         {
-            _context = context;
             _environment = environment;
-            _service = service;
+            _apiService = apiService;
+            _clientApiService = clientApiService;
         }
 
         // GET: Contracts
         public async Task<IActionResult> Index(
-    ContractStatus? status,
-    DateTime? startDate,
-    DateTime? endDate)
+            ContractStatus? status,
+            DateTime? startDate,
+            DateTime? endDate)
         {
-            var query = _context.Contracts
-                .Include(c => c.Client)
-                .AsQueryable();
-
-            if (status.HasValue)
-            {
-                query = query.Where(c => c.Status == status);
-            }
-
-            if (startDate.HasValue)
-            {
-                query = query.Where(c => c.StartDate >= startDate.Value);
-            }
-
-            if (endDate.HasValue)
-            {
-                query = query.Where(c => c.EndDate <= endDate.Value);
-            }
-
             ViewBag.Status = status;
             ViewBag.StartDate = startDate;
             ViewBag.EndDate = endDate;
 
-            var contracts = await query.ToListAsync();
+            var contracts =
+                await _apiService.GetContractsAsync(
+                    status,
+                    startDate,
+                    endDate);
 
+            if (!contracts.Any())
+            {
+                ViewBag.ApiMessage =
+                    "No contracts available or API service is unavailable.";
+            }
             return View(contracts);
         }
 
@@ -67,7 +57,7 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var contract = await _service.GetByIdAsync(id.Value);
+            var contract = await _apiService.GetContractAsync(id.Value);
 
             if (contract == null)
             {
@@ -78,9 +68,9 @@ namespace GLMS.Controllers
         }
 
         // GET: Contracts/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            LoadClientsDropdown();
+            await LoadClientsDropdown();
             return View();
         }
 
@@ -109,8 +99,7 @@ namespace GLMS.Controllers
                         "",
                         "Only PDF files are allowed.");
 
-                    LoadClientsDropdown();
-
+                    await LoadClientsDropdown();
                     return View(contract);
                 }
 
@@ -134,13 +123,15 @@ namespace GLMS.Controllers
 
                 contract.AgreementFilePath = fileName;
 
-                var result = await _service.CreateAsync(contract);
+                var success = await _apiService.CreateContractAsync(contract);
 
-                if (!result.Success)
+                if (!success)
                 {
-                    ModelState.AddModelError("", result.Message);
+                    ModelState.AddModelError(
+                        "",
+                        "Failed to create contract.");
 
-                    LoadClientsDropdown();
+                    await LoadClientsDropdown();
 
                     return View(contract);
                 }
@@ -148,7 +139,7 @@ namespace GLMS.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadClientsDropdown();
+            await LoadClientsDropdown();
 
             return View(contract);
         }
@@ -161,14 +152,14 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var contract = await _service.GetByIdAsync(id.Value);
+            var contract = await _apiService.GetContractAsync(id.Value);
 
             if (contract == null)
             {
                 return NotFound();
             }
 
-            LoadClientsDropdown();
+            await LoadClientsDropdown();
 
             return View(contract);
         }
@@ -197,7 +188,7 @@ namespace GLMS.Controllers
                             "",
                             "Agreement PDF is required.");
 
-                        LoadClientsDropdown();
+                        await LoadClientsDropdown();
 
                         return View(contract);
                     }
@@ -208,7 +199,7 @@ namespace GLMS.Controllers
                     {
                         ModelState.AddModelError("", "Only PDF files are allowed.");
 
-                        LoadClientsDropdown();
+                        await LoadClientsDropdown();
 
                         return View(contract);
                     }
@@ -229,35 +220,30 @@ namespace GLMS.Controllers
 
                     contract.AgreementFilePath = fileName;
                 }
-                try
-                {
-                    if (agreementFile == null)
-                    {
-                        var existingContract = await _context.Contracts
-                            .AsNoTracking()
-                            .FirstOrDefaultAsync(c => c.Id == contract.Id);
 
+                if (agreementFile == null)
+                {
+                    var existingContract =
+                        await _apiService.GetContractAsync(id);
+
+                    if (existingContract != null)
+                    {
                         contract.AgreementFilePath =
-                            existingContract?.AgreementFilePath;
+                            existingContract.AgreementFilePath;
                     }
-                    _context.Update(contract);
-
-                    await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_service.Exists(contract.Id))
-                    {
-                        return NotFound();
-                    }
 
-                    throw;
+                var success = await _apiService.UpdateContractAsync(id,contract);
+
+                if (!success)
+                {
+                    return NotFound();
                 }
 
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadClientsDropdown();
+            await LoadClientsDropdown();
 
             return View(contract);
         }
@@ -270,7 +256,7 @@ namespace GLMS.Controllers
                 return NotFound();
             }
 
-            var contract = await _service.GetByIdAsync(id.Value);
+            var contract = await _apiService.GetContractAsync(id.Value);
 
             if (contract == null)
             {
@@ -285,23 +271,25 @@ namespace GLMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var contract = await _context.Contracts.FindAsync(id);
-
-            if (contract != null)
-            {
-                _context.Contracts.Remove(contract);
-
-                await _context.SaveChangesAsync();
-            }
+            await _apiService.DeleteContractAsync(id);
 
             return RedirectToAction(nameof(Index));
         }
 
-        private void LoadClientsDropdown()
+        private async Task LoadClientsDropdown()
         {
+            var clients =
+                await _clientApiService.GetClientsAsync();
+
+            if (!clients.Any())
+            {
+                ViewBag.ApiMessage =
+                    "Unable to load clients. API service may be unavailable.";
+            }
+
             ViewData["ClientId"] =
                 new SelectList(
-                    _context.Clients,
+                    clients,
                     "Id",
                     "Name");
         }

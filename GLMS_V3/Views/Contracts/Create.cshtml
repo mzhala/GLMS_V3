@@ -8,6 +8,14 @@
     </div>
 }
 
+@if (ViewBag.ApiMessage != null)
+{
+    <div class="alert alert-warning">
+        @ViewBag.ApiMessage
+    </div>
+}
+
+
 @{
     ViewData["Title"] = "Contract";
 }

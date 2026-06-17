@@ -32,10 +32,18 @@ namespace GLMS_V3.Tests.Controller
 
             var contractService = new ContractService(context);
 
+            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+
+            var apiService = new ContractApiService(
+                    httpClientFactoryMock.Object);
+
+            var clientApiService = new ClientApiService(
+                 httpClientFactoryMock.Object);
+
             var controller = new ContractsController(
-                context,
                 environmentMock.Object,
-                contractService);
+                apiService,
+                clientApiService);
 
             var contract = new Contract
             {
@@ -98,10 +106,19 @@ namespace GLMS_V3.Tests.Controller
 
             var contractService = new ContractService(context);
 
+            var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+
+            var apiService = new ContractApiService(
+                    httpClientFactoryMock.Object);
+
+
+            var clientApiService = new ClientApiService(
+                 httpClientFactoryMock.Object);
+
             var controller = new ContractsController(
-                context,
                 environmentMock.Object,
-                contractService);
+                apiService,
+                clientApiService);
 
             var contract = new Contract
             {

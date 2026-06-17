@@ -2,7 +2,6 @@ using GLMS.Data;
 using GLMS.Services;
 using Microsoft.EntityFrameworkCore;
 using GLMS.Services;
-using GLMS.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +14,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<ServiceRequestService>();
 builder.Services.AddScoped<ContractService>();
+
 builder.Services.AddHttpClient<CurrencyService>();
+builder.Services.AddScoped<ContractApiService>();
+builder.Services.AddScoped<ClientApiService>();
+builder.Services.AddScoped<ServiceRequestApiService>();
+
+builder.Services.AddHttpClient("GLMSApi", client =>
+{
+    client.BaseAddress =
+        new Uri("https://localhost:7277/");
+});
 
 var app = builder.Build();
 

@@ -5,6 +5,13 @@
     ViewData["Title"] = "Contracts";
 }
 
+@if (ViewBag.ApiMessage != null)
+{
+    <div class="alert alert-warning">
+        @ViewBag.ApiMessage
+    </div>
+}
+
 <h1>Contract</h1>
 
 <p>

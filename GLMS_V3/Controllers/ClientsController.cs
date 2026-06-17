@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GLMS.Data;
+using GLMS.Models;
+using GLMS.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using GLMS.Data;
-using GLMS.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace GLMS.Controllers
 {
@@ -14,15 +15,23 @@ namespace GLMS.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public ClientsController(ApplicationDbContext context)
+        private readonly ClientApiService _apiService;
+
+        public ClientsController(
+            ApplicationDbContext context,
+            ClientApiService apiService)
         {
             _context = context;
+            _apiService = apiService;
         }
 
         // GET: Clients
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Clients.ToListAsync());
+            var clients =
+                await _apiService.GetClientsAsync();
+
+            return View(clients);
         }
 
         // GET: Clients/Details/5

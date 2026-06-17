@@ -11,19 +11,24 @@ namespace GLMS.Controllers
     {
         private readonly ServiceRequestService _service;
         private readonly ApplicationDbContext _context;
+        private readonly ServiceRequestApiService _apiService;
 
         public ServiceRequestsController(
             ServiceRequestService service,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            ServiceRequestApiService apiService)
         {
             _service = service;
             _context = context;
+            _apiService = apiService;
         }
 
         // GET: ServiceRequests
         public async Task<IActionResult> Index()
         {
-            var serviceRequests = await _service.GetAllAsync();
+            var serviceRequests =
+                await _apiService.GetServiceRequestsAsync();
+
             return View(serviceRequests);
         }
 
